@@ -4,6 +4,7 @@ set -euo pipefail
 
 export DOTNET_SDK_VERSION=10.0.105-r0
 export DOTNET_RUNTIME_VERSION=10.0.5-r0
+export DOTNET_ASPNET_VERSION=10.0.5-r0
 
 export REPOSITORY=aserv92/dotnet
 
@@ -27,3 +28,4 @@ build_push() {
 
 build_push sdk "${DOTNET_SDK_VERSION}"
 build_push runtime "${DOTNET_RUNTIME_VERSION}"
+build_push aspnet "${DOTNET_ASPNET_VERSION}"
