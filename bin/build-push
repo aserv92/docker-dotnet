@@ -8,8 +8,6 @@ export DOTNET_ASPNET_VERSION=10.0.5-r0
 
 export REPOSITORY=aserv92/dotnet
 
-export PLATFORMS='linux/amd64,linux/arm64'
-
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 <sdk|runtime|aspnet>"
   exit 1
@@ -45,7 +43,7 @@ build_push() {
     -t "${REPOSITORY}-${name}:${version}" \
     -t "${REPOSITORY}-${name}:${version}-$(git rev-parse --short HEAD)" \
     --build-arg "VERSION=${version}" \
-    --platform ${PLATFORMS} \
+    --platform 'linux/amd64,linux/arm64' \
     -f "${name}/Dockerfile" \
     .
 }
