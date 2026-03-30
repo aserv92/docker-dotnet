@@ -1,6 +1,6 @@
-# Docker dotnet
+# Docker .NET
 
-[Docker](https://www.docker.com) images for the Microsoft .net framework.
+[Docker](https://www.docker.com) images for the Microsoft .NET framework.
 
 ## Directories
 - `/workdir` This is the working directory that is set when the container starts
