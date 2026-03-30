@@ -10,6 +10,30 @@ export REPOSITORY=aserv92/dotnet
 
 export PLATFORMS='linux/amd64,linux/arm64'
 
+if [[ $# -ne 1 ]]; then
+  echo "Usage: $0 <sdk|runtime|aspnet>"
+  exit 1
+fi
+
+target="$1"
+
+case "${target}" in
+  sdk)
+    version="${DOTNET_SDK_VERSION}"
+    ;;
+  runtime)
+    version="${DOTNET_RUNTIME_VERSION}"
+    ;;
+  aspnet)
+    version="${DOTNET_ASPNET_VERSION}"
+    ;;
+  *)
+    echo "Invalid argument: ${target}"
+    echo "Valid options: sdk, runtime, aspnet"
+    exit 1
+    ;;
+esac
+
 build_push() {
   local name="${1}"
   local version="${2}"
@@ -26,6 +50,4 @@ build_push() {
     .
 }
 
-build_push sdk "${DOTNET_SDK_VERSION}"
-build_push runtime "${DOTNET_RUNTIME_VERSION}"
-build_push aspnet "${DOTNET_ASPNET_VERSION}"
+build_push "${target}" "${version}"
