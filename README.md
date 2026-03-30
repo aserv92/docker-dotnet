@@ -2,6 +2,9 @@
 
 [Docker](https://www.docker.com) images for the Microsoft .NET framework.
 
+## Why?
+This image allows you to control the user ID that the main process inside the container runs as.
+
 ## Directories
 - `/workdir` This is the working directory that is set when the container starts
 
