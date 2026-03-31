@@ -39,6 +39,7 @@ build_push() {
   docker buildx \
     build \
     --push \
+    --no-cache \
     -t "${REPOSITORY}-${name}:latest" \
     -t "${REPOSITORY}-${name}:${version}" \
     -t "${REPOSITORY}-${name}:${version}-$(git rev-parse --short HEAD)" \
