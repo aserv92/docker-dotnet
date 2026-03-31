@@ -13,6 +13,12 @@ This image allows you to control the user ID that the main process inside the co
 ## Directories
 - `/workdir` This is the working directory that is set when the container starts
 
+#### SDK Directories
+These directories are used to store configuration and NuGet packages.
+  - /home/user/.dotnet
+  - /home/user/.local/share/NuGet
+  - /home/user/.nuget
+
 ## User ID control
 
 It is possible to control the UID the initial process runs as. This is important if you are mounting a volumes into the container, as the UID of the initial process will likely need to match the permissions of the volume to be able to read and/or write to it.
