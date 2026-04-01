@@ -32,5 +32,5 @@ docker run \
   -v $(pwd):/workdir \
   -e LOCAL_USER_ID=$(id -u) \
   --rm \
-  aserv92/docker-dotnet:sdk dotnet --version
+  aserv92/dotnet-sdk:latest dotnet --version
 ```
