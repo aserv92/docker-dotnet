@@ -2,11 +2,12 @@
 
 set -euo pipefail
 
-export DOTNET_SDK_VERSION=10.0.105-r0
-export DOTNET_RUNTIME_VERSION=10.0.5-r0
-export DOTNET_ASPNET_VERSION=10.0.5-r0
-
-export REPOSITORY=aserv92/dotnet
+source ./libraries/bash/docker/alpine.sh
+source ./libraries/bash/docker/alpine/apk.sh
+source ./libraries/bash/docker/architectures.sh
+source ./libraries/bash/docker/registry.sh
+source ./libraries/bash/env.sh
+source ./libraries/bash/output.sh
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 <sdk|runtime|aspnet>"
@@ -15,15 +16,21 @@ fi
 
 target="$1"
 
+output.info "Loading build environment..."
+env.load build
+
 case "${target}" in
   sdk)
-    version="${DOTNET_SDK_VERSION}"
+    alpine_pkg_name='dotnet10-sdk'
+    registry="$DOCKER_SDK_REGISTRY"
     ;;
   runtime)
-    version="${DOTNET_RUNTIME_VERSION}"
+    alpine_pkg_name='dotnet10-runtime'
+    registry="$DOCKER_RUNTIME_REGISTRY"
     ;;
   aspnet)
-    version="${DOTNET_ASPNET_VERSION}"
+    alpine_pkg_name='aspnetcore10-runtime'
+    registry="$DOCKER_ASPNET_REGISTRY"
     ;;
   *)
     echo "Invalid argument: ${target}"
@@ -32,21 +39,45 @@ case "${target}" in
     ;;
 esac
 
-build_push() {
-  local name="${1}"
-  local version="${2}"
+output.info "Starting Alpine container..."
+docker.alpine.start "$ALPINE_APK_IMAGE"
+set -E
+trap 'docker.alpine.remove' ERR
 
+for TARGET_ARCH in $TARGET_ARCHS; do
+  ALPINE_ARCH=${DOCKER_ARCHS_TO_LINUX_ARCHS[$TARGET_ARCH]}
+  output.info "Updating $ALPINE_ARCH APK packages..."
+  docker.alpine.apk.update "$ALPINE_ARCH"
+done
+
+declare -A BUILDS
+
+for TARGET_ARCH in $TARGET_ARCHS; do
+  LINUX_ARCH=${DOCKER_ARCHS_TO_LINUX_ARCHS[$TARGET_ARCH]}
+  LATEST_VERSION=$(docker.alpine.apk.query.version "$LINUX_ARCH" "$alpine_pkg_name")
+  if [[ $(docker.registry.tag.exists.for.arch "$registry" "$LATEST_VERSION" "$TARGET_ARCH") = 'yes' ]]; then
+    output.info "Image with $alpine_pkg_name version ($LATEST_VERSION) already exists for $TARGET_ARCH. (skipping)"
+    continue
+  fi
+  output.info "Adding $alpine_pkg_name version $LATEST_VERSION ($LINUX_ARCH) to build list."
+  BUILDS[$LATEST_VERSION]+="${BUILDS[$LATEST_VERSION]:+,}$TARGET_ARCH"
+done
+
+for VERSION in "${!BUILDS[@]}"; do
+  output.info "Building $alpine_pkg_name version $VERSION (${BUILDS[$VERSION]})"
   docker buildx \
     build \
     --push \
     --no-cache \
-    -t "${REPOSITORY}-${name}:latest" \
-    -t "${REPOSITORY}-${name}:${version}" \
-    -t "${REPOSITORY}-${name}:${version}-$(git rev-parse --short HEAD)" \
-    --build-arg "VERSION=${version}" \
-    --platform 'linux/amd64,linux/arm64' \
-    -f "${name}/Dockerfile" \
+    -t "${registry}:latest" \
+    -t "${registry}:${VERSION}" \
+    -t "${registry}:${VERSION}-$(git rev-parse --short HEAD)" \
+    --build-arg "BASE_ALPINE_IMAGE=${BASE_ALPINE_IMAGE}" \
+    --build-arg "VERSION=${VERSION}" \
+    --platform "${BUILDS[$VERSION]}" \
+    -f "${target}/Dockerfile" \
     .
-}
+done
 
-build_push "${target}" "${version}"
+output.info "Removing Alpine container..."
+docker.alpine.remove
