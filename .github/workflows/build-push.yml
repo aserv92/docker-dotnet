@@ -1,0 +1,31 @@
+name: Build and Push
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  push:
+    branches:
+      - master
+
+jobs:
+  build-push-sdk:
+    uses: aserv92/libraries/.github/workflows/docker-build-push.yml@0be0db81a85c5cc73984d73c10e3f3eaa9efe14b
+    with:
+      BUILD_PUSH_CMD: './bin/build-push sdk'
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  build-push-runtime:
+    uses: aserv92/libraries/.github/workflows/docker-build-push.yml@0be0db81a85c5cc73984d73c10e3f3eaa9efe14b
+    with:
+      BUILD_PUSH_CMD: './bin/build-push runtime'
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  build-push-aspnet:
+    uses: aserv92/libraries/.github/workflows/docker-build-push.yml@0be0db81a85c5cc73984d73c10e3f3eaa9efe14b
+    with:
+      BUILD_PUSH_CMD: './bin/build-push aspnet'
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
